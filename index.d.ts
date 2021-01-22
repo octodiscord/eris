@@ -184,66 +184,6 @@ declare namespace Eris {
     seedVoiceConnections?: boolean;
     ws?: unknown;
   }
-  interface CommandClientOptions {
-    argsSplitter?: (str: string) => string[];
-    defaultCommandOptions?: CommandOptions;
-    defaultHelpCommand?: boolean;
-    description?: string;
-    ignoreBots?: boolean;
-    ignoreSelf?: boolean;
-    name?: string;
-    owner?: string;
-    prefix?: string | string[];
-  }
-
-  // Command
-  interface CommandCooldownExclusions {
-    channelIDs?: string[];
-    guildIDs?: string[];
-    userIDs?: string[];
-  }
-  interface CommandOptions {
-    aliases?: string[];
-    argsRequired?: boolean;
-    caseInsensitive?: boolean;
-    cooldown?: number;
-    cooldownExclusions?: CommandCooldownExclusions;
-    cooldownMessage?: string | GenericCheckFunction<string> | false;
-    cooldownReturns?: number;
-    defaultSubcommandOptions?: CommandOptions;
-    deleteCommand?: boolean;
-    description?: string;
-    dmOnly?: boolean;
-    errorMessage?: string | GenericCheckFunction<string>;
-    fullDescription?: string;
-    guildOnly?: boolean;
-    hidden?: boolean;
-    hooks?: Hooks;
-    invalidUsageMessage?: string | GenericCheckFunction<string> | false;
-    permissionMessage?: string | GenericCheckFunction<string> | false;
-    reactionButtons?: CommandReactionButtonsOptions[] | null;
-    reactionButtonTimeout?: number;
-    requirements?: CommandRequirements;
-    restartCooldown?: boolean;
-    usage?: string;
-  }
-  interface CommandReactionButtons extends CommandReactionButtonsOptions {
-    execute: (msg: Message, args: string[], userID: string) => string | GeneratorFunctionReturn;
-    responses: ((() => string) | ReactionButtonsGeneratorFunction)[];
-  }
-  interface CommandReactionButtonsOptions {
-    emoji: string;
-    filter: ReactionButtonsFilterFunction;
-    response: string | ReactionButtonsGeneratorFunction;
-    type: "edit" | "cancel";
-  }
-  interface CommandRequirements {
-    custom?: GenericCheckFunction<void>;
-    permissions?: { [s: string]: boolean } | GenericCheckFunction<{ [s: string]: boolean }>;
-    roleIDs?: string[] | GenericCheckFunction<string[]>;
-    roleNames?: string[] | GenericCheckFunction<string[]>;
-    userIDs?: string[] | GenericCheckFunction<string[]>;
-  }
   interface Hooks {
     postCheck?: (msg: Message, args: string[], checksPassed: boolean) => void;
     postCommand?: (msg: Message, args: string[], sent?: Message) => void;
@@ -413,16 +353,10 @@ declare namespace Eris {
   }
   interface EventListeners<T> {
     (event: "ready" | "disconnect", listener: () => void): T;
-    (event: "callCreate" | "callRing" | "callDelete", listener: (call: Call) => void): T;
-    (event: "callUpdate", listener: (call: Call, oldCall: OldCall) => void): T;
     (event: "channelCreate" | "channelDelete", listener: (channel: AnyChannel) => void): T;
     (
       event: "channelPinUpdate",
       listener: (channel: TextableChannel, timestamp: number, oldTimestamp: number) => void
-    ): T;
-    (
-      event: "channelRecipientAdd" | "channelRecipientRemove",
-      listener: (channel: GroupChannel, user: User) => void
     ): T;
     (event: "channelUpdate", listener: (channel: AnyChannel, oldChannel: OldGuildChannel | OldGroupChannel) => void): T;
     (event: "connect" | "shardPreReady", listener: (id: number) => void): T;
@@ -675,7 +609,6 @@ declare namespace Eris {
   // Message
   interface ActiveMessages {
     args: string[];
-    command: Command;
     timeout: NodeJS.Timer;
   }
   interface AllowedMentions {
@@ -1129,36 +1062,6 @@ declare namespace Eris {
     results: (Message & { hit?: boolean })[][];
     totalResults: number;
   }
-  interface UserProfile {
-    connected_accounts: { verified: boolean; type: string; id: string; name: string }[];
-    mutual_guilds: { nick?: string; id: string }[];
-    premium_since?: number;
-    user: PartialUser & { flags: number };
-  }
-  interface UserSettings {
-    afk_timeout: number;
-    convert_emojis: boolean;
-    default_guilds_restricted: boolean;
-    detect_platform_accounts: boolean;
-    developer_mode: boolean;
-    enable_tts_command: boolean;
-    explicit_content_filter: number;
-    friend_source_flags: {
-      all: boolean; // not sure about other keys, abal heeeelp
-    };
-    inline_attachment_media: boolean;
-    inline_embed_media: boolean;
-    guild_positions: string[];
-    locale: string;
-    message_display_compact: boolean;
-    render_embeds: boolean;
-    restricted_guilds: string[];
-    render_reactions: boolean;
-    show_current_game: boolean;
-    status: string;
-    theme: string;
-  }
-
 
   class Base implements SimpleJSON {
     createdAt: number;
@@ -1201,19 +1104,6 @@ declare namespace Eris {
     constructor(message: string, event: Event);
   }
 
-  export class Call extends Base {
-    channel: GroupChannel;
-    createdAt: number;
-    endedTimestamp: number | null;
-    id: string;
-    participants: string[];
-    region: string | null;
-    ringing: string[];
-    unavailable: boolean;
-    voiceStates: Collection<VoiceState>;
-    constructor(data: BaseData, channel: GroupChannel);
-  }
-
   export class CategoryChannel extends GuildChannel {
     channels: Collection<Exclude<AnyGuildChannel, CategoryChannel>>;
     type: 4;
@@ -1234,7 +1124,6 @@ declare namespace Eris {
     bot?: boolean;
     channelGuildMap: { [s: string]: string };
     gatewayURL?: string;
-    groupChannels: Collection<GroupChannel>;
     guilds: Collection<Guild>;
     guildShardMap: { [s: string]: number };
     notes: { [s: string]: string };
@@ -1251,7 +1140,6 @@ declare namespace Eris {
     user: User;
     userGuildSettings: { [s: string]: GuildSettings };
     users: Collection<User>;
-    userSettings: UserSettings;
     voiceConnections: VoiceConnectionManager;
     constructor(token: string, options?: ClientOptions);
     addGuildMemberRole(guildID: string, memberID: string, roleID: string, reason?: string): Promise<void>;
@@ -1356,7 +1244,6 @@ declare namespace Eris {
       options: { name: string; avatar: string },
       reason?: string
     ): Promise<Webhook>;
-    createGroupChannel(userIDs: string[]): Promise<GroupChannel>;
     createGuild(name: string, options?: CreateGuildOptions): Promise<Guild>;
     createGuildEmoji(guildID: string, options: EmojiOptions, reason?: string): Promise<Emoji>;
     createMessage(channelID: string, content: MessageContent, file?: MessageFile | MessageFile[]): Promise<Message>;
@@ -1378,7 +1265,7 @@ declare namespace Eris {
       channelID: string,
       options: EditChannelOptions,
       reason?: string
-    ): Promise<GroupChannel | AnyGuildChannel>;
+    ): Promise<AnyGuildChannel>;
     editChannelPermission(
       channelID: string,
       overwriteID: string,
@@ -1788,7 +1675,6 @@ declare namespace Eris {
     channelMentions: string[];
     /** @deprecated */
     cleanContent: string;
-    command?: Command;
     content: string;
     createdAt: number;
     editedTimestamp?: number;
@@ -2108,12 +1994,8 @@ declare namespace Eris {
     system: boolean;
     username: string;
     constructor(data: BaseData, client: Client);
-    addRelationship(block?: boolean): Promise<void>;
-    deleteNote(): Promise<void>;
     dynamicAvatarURL(format?: ImageFormat, size?: number): string;
-    editNote(note: string): Promise<void>;
     getDMChannel(): Promise<PrivateChannel>;
-    getProfile(): Promise<UserProfile>;
 
   }
 
