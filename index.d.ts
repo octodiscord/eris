@@ -1871,7 +1871,7 @@ declare namespace Eris {
     editAFK(afk: boolean): void;
     editStatus(status?: Status, game?: ActivityPartial<BotActivityType>): void;
     editStatus(game?: ActivityPartial<BotActivityType>): void;
-    // @ts-ignore
+    // @ts-expect-error
     emit(event: string, ...args: any[]): void;
     getGuildMembers(guildID: string, timeout: number): void;
     hardReset(): void;
