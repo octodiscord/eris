@@ -2119,7 +2119,6 @@ declare namespace Eris {
     getDMChannel(): Promise<PrivateChannel>;
     getProfile(): Promise<UserProfile>;
 
-    removeRelationship(): Promise<void>;
   }
 
   export class VoiceChannel extends GuildChannel implements Invitable {
