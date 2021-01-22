@@ -1248,20 +1248,16 @@ declare namespace Eris {
     token?: string;
     unavailableGuilds: Collection<UnavailableGuild>;
     uptime: number;
-    user: ExtendedUser;
+    user: User;
     userGuildSettings: { [s: string]: GuildSettings };
     users: Collection<User>;
     userSettings: UserSettings;
     voiceConnections: VoiceConnectionManager;
     constructor(token: string, options?: ClientOptions);
-    acceptInvite(inviteID: string): Promise<Invite & InviteWithoutMetadata<null>>;
-    addGroupRecipient(groupID: string, userID: string): Promise<void>;
     addGuildMemberRole(guildID: string, memberID: string, roleID: string, reason?: string): Promise<void>;
     /** @deprecated */
     addMessageReaction(channelID: string, messageID: string, reaction: string, userID: string): Promise<void>;
     addMessageReaction(channelID: string, messageID: string, reaction: string): Promise<void>;
-    addRelationship(userID: string, block?: boolean): Promise<void>;
-    addSelfPremiumSubscription(token: string, plan: string): Promise<void>;
     banGuildMember(guildID: string, userID: string, deleteMessageDays?: number, reason?: string): Promise<void>;
     closeVoiceConnection(guildID: string): void;
     connect(): Promise<void>;
@@ -1375,11 +1371,7 @@ declare namespace Eris {
     deleteMessage(channelID: string, messageID: string, reason?: string): Promise<void>;
     deleteMessages(channelID: string, messageIDs: string[], reason?: string): Promise<void>;
     deleteRole(guildID: string, roleID: string, reason?: string): Promise<void>;
-    deleteSelfConnection(platform: string, id: string): Promise<void>;
-    deleteSelfPremiumSubscription(): Promise<void>;
-    deleteUserNote(userID: string): Promise<void>;
     deleteWebhook(webhookID: string, token?: string, reason?: string): Promise<void>;
-    disableSelfMFATOTP(code: string): Promise<{ token: string }>;
     disconnect(options: { reconnect?: boolean | "auto" }): void;
     editAFK(afk: boolean): void;
     editChannel(
@@ -1410,15 +1402,7 @@ declare namespace Eris {
     editNickname(guildID: string, nick: string, reason?: string): Promise<void>;
     editRole(guildID: string, roleID: string, options: RoleOptions, reason?: string): Promise<Role>; // TODO not all options are available?
     editRolePosition(guildID: string, roleID: string, position: number): Promise<void>;
-    editSelf(options: { avatar?: string; username?: string }): Promise<ExtendedUser>;
-    editSelfConnection(
-      platform: string,
-      id: string,
-      data: { friendSync: boolean; visibility: number }
-    ): Promise<Connection>;
-    editSelfSettings(data: UserSettings): Promise<UserSettings>;
     editStatus(status?: Status, game?: ActivityPartial<BotActivityType>): void;
-    editUserNote(userID: string, note: string): Promise<void>;
     editWebhook(
       webhookID: string,
       options: WebhookOptions,
@@ -1482,41 +1466,6 @@ declare namespace Eris {
     getRESTGuildRoles(guildID: string): Promise<Role[]>;
     getRESTGuilds(limit?: number, before?: string, after?: string): Promise<Guild[]>;
     getRESTUser(userID: string): Promise<User>;
-    getSelf(): Promise<ExtendedUser>;
-    getSelfBilling(): Promise<{
-      payment_gateway?: string;
-      payment_source?: {
-        brand: string;
-        expires_month: number;
-        expires_year: number;
-        invalid: boolean;
-        last_4: number;
-        type: string;
-      };
-      premium_subscription?: {
-        canceled_at?: string;
-        created_at: string;
-        current_period_end?: string;
-        current_period_start?: string;
-        ended_at?: string;
-        plan: string;
-        status: number;
-      };
-    }>;
-    getSelfConnections(): Promise<Connection[]>;
-    getSelfMFACodes(
-      password: string,
-      regenerate?: boolean
-    ): Promise<{ backup_codes: { code: string; consumed: boolean }[] }>;
-    getSelfPayments(): Promise<{
-      amount: number;
-      amount_refunded: number;
-      created_at: string; // date
-      currency: string;
-      description: string;
-      status: number;
-    }[]>;
-    getSelfSettings(): Promise<UserSettings>;
     getUserProfile(userID: string): Promise<UserProfile>;
     getVoiceRegions(guildID?: string): Promise<VoiceRegion[]>;
     getWebhook(webhookID: string, token?: string): Promise<Webhook>;
@@ -1534,7 +1483,6 @@ declare namespace Eris {
       after?: string,
       reason?: string
     ): Promise<number>;
-    removeGroupRecipient(groupID: string, userID: string): Promise<void>;
     removeGuildMemberRole(guildID: string, memberID: string, roleID: string, reason?: string): Promise<void>;
     /** @deprecated */
     removeMessageReaction(channelID: string, messageID: string, reaction: string, userID: string): Promise<void>;
@@ -1569,68 +1517,6 @@ declare namespace Eris {
     update(obj: T, extra?: unknown, replace?: boolean): T;
   }
 
-  export class Command implements CommandOptions, SimpleJSON {
-    aliases: string[];
-    argsRequired: boolean;
-    caseInsensitive: boolean;
-    cooldown: number;
-    cooldownExclusions: CommandCooldownExclusions;
-    cooldownMessage: string | false | GenericCheckFunction<string>;
-    cooldownReturns: number;
-    defaultSubcommandOptions: CommandOptions;
-    deleteCommand: boolean;
-    description: string;
-    dmOnly: boolean;
-    errorMessage: string | GenericCheckFunction<string>;
-    fullDescription: string;
-    fullLabel: string;
-    guildOnly: boolean;
-    hidden: boolean;
-    hooks: Hooks;
-    invalidUsageMessage: string | false | GenericCheckFunction<string>;
-    label: string;
-    parentCommand?: Command;
-    permissionMessage: string | false | GenericCheckFunction<string>;
-    reactionButtons: null | CommandReactionButtons[];
-    reactionButtonTimeout: number;
-    requirements: CommandRequirements;
-    restartCooldown: boolean;
-    subcommandAliases: { [alias: string]: Command };
-    subcommands: { [s: string]: Command };
-    usage: string;
-    constructor(label: string, generate: CommandGenerator, options?: CommandOptions);
-    cooldownCheck(msg: Message): boolean;
-    cooldownExclusionCheck(msg: Message): boolean;
-    executeCommand(msg: Message, args: string[]): Promise<GeneratorFunctionReturn>;
-    permissionCheck(msg: Message): Promise<boolean>;
-    process(args: string[], msg: Message): Promise<void | GeneratorFunctionReturn>;
-    registerSubcommand(label: string, generator: CommandGenerator, options?: CommandOptions): Command;
-    registerSubcommandAlias(alias: string, label: string): void;
-    unregisterSubcommand(label: string): void;
-    toString(): string;
-    toJSON(props?: string[]): JSONCache;
-  }
-
-  export class CommandClient extends Client {
-    activeMessages: { [s: string]: ActiveMessages };
-    commandAliases: { [s: string]: string };
-    commandOptions: CommandClientOptions;
-    commands: { [s: string]: Command };
-    guildPrefixes: { [s: string]: string | string[] };
-    preReady?: true;
-    constructor(token: string, options?: ClientOptions, commandOptions?: CommandClientOptions);
-    checkPrefix(msg: Message): string;
-    onMessageCreate(msg: Message): Promise<void>;
-    onMessageReactionEvent(msg: Message, emoji: Emoji, userID: string): Promise<void>
-    registerCommand(label: string, generator: CommandGenerator, options?: CommandOptions): Command;
-    registerCommandAlias(alias: string, label: string): void;
-    registerGuildPrefix(guildID: string, prefix: string[] | string): void;
-    resolveCommand(label: string): Command;
-    unregisterCommand(label: string): void;
-    unwatchMessage(id: string, channelID: string): void;
-    toString(): string;
-  }
-
   export class DiscordHTTPError extends Error {
     code: number;
     name: "DiscordHTTPError";
@@ -1649,26 +1535,6 @@ declare namespace Eris {
     response: HTTPResponse;
     constructor(req: ClientRequest, res: IncomingMessage, response: HTTPResponse, stack: string);
     flattenErrors(errors: HTTPResponse, keyPrefix?: string): string[];
-  }
-
-  export class ExtendedUser extends User {
-    email: string;
-    mfaEnabled: boolean;
-    premiumType: 0 | 1 | 2;
-    verified: boolean;
-  }
-
-  export class GroupChannel extends PrivateChannel {
-    icon: string | null;
-    iconURL: string | null;
-    name: string;
-    ownerID: string;
-    recipients: Collection<User>;
-    type: 3;
-    addRecipient(userID: string): Promise<void>;
-    dynamicIconURL(format?: ImageFormat, size?: number): string;
-    edit(options: { icon?: string; name?: string; ownerID?: string }): Promise<GroupChannel>;
-    removeRecipient(userID: string): Promise<void>;
   }
 
   export class Guild extends Base {
