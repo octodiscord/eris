@@ -1466,7 +1466,6 @@ declare namespace Eris {
     getRESTGuildRoles(guildID: string): Promise<Role[]>;
     getRESTGuilds(limit?: number, before?: string, after?: string): Promise<Guild[]>;
     getRESTUser(userID: string): Promise<User>;
-    getUserProfile(userID: string): Promise<UserProfile>;
     getVoiceRegions(guildID?: string): Promise<VoiceRegion[]>;
     getWebhook(webhookID: string, token?: string): Promise<Webhook>;
     joinVoiceChannel(channelID: string, options?: { opusOnly?: boolean; shared?: boolean }): Promise<VoiceConnection>;
@@ -1489,7 +1488,6 @@ declare namespace Eris {
     removeMessageReaction(channelID: string, messageID: string, reaction: string): Promise<void>;
     removeMessageReactionEmoji(channelID: string, messageID: string, reaction: string): Promise<void>;
     removeMessageReactions(channelID: string, messageID: string): Promise<void>;
-    removeRelationship(userID: string): Promise<void>;
     searchChannelMessages(channelID: string, query: SearchOptions): Promise<SearchResults>;
     searchGuildMembers(guildID: string, query: string, limit?: number): Promise<Member[]>;
     searchGuildMessages(guildID: string, query: SearchOptions): Promise<SearchResults>;
